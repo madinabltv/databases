@@ -115,14 +115,8 @@ CREATE TABLE Student(
 	DateOfBirth Date CHECK (DateOfBirth < DATEADD(year, -12, GETDATE())) DEFAULT DATEADD(year, -12, GETDATE()),
 	RoomID INT
 	CONSTRAINT FK_RoomID FOREIGN KEY (RoomID) REFERENCES Room (RoomID)
-		ON UPDATE CASCADE --каскадное изменение ссылающихся таблиц;
-		--ON UPDATE NO ACTION --выдаст ошибку при удалении/изменении
-		--ON UPDATE SET NULL --установка NULL для ссылающихся внешних ключей;
-		--ON UPDATE SET DEFAULT --установка значений по умолчанию для ссылающихся внешних ключей;
-		ON DELETE SET NULL --Указывает, что дочерние данные устанавливаются в NULL при удалении родительских данных
-		--ON DELETE NO ACTION --строка в родительской таблице может быть удалена, если от нее не зависит другая строка
-		--ON DELETE SET DEFAULT
-		--ON DELETE CASCADE 
+		ON UPDATE CASCADE --ON UPDATE NO ACTION|ON UPDATE SET NULL|ON UPDATE SET DEFAULT 
+		ON DELETE SET NULL --ON DELETE NO ACTION|ON DELETE SET DEFAULT|ON DELETE CASCADE 
 )
 GO
 
