@@ -135,18 +135,5 @@ INSERT INTO Student (FirstName, SecondName, Telephone, DateOfBirth, RoomID) VALU
 SELECT * FROM Room;
 SELECT * FROM Student;
 
-
-/*действия CASCADE, SET и SET DEFAULT позволяют удалять и
-обновлять значения ключей, влияющие на таблицы, в которых
-определены связи внешних ключей, приводящие к таблице, в которую
-вносятся изменения:
-–
-CASCADE: каскадное изменение ссылающихся таблиц;
-–
-SET NULL: установка для ссылающихся внешних ключей;
-–
-SET DEFAULT: установка значений по умолчанию для ссылающихся
-внешних ключей;*/
-
 use master
 go
