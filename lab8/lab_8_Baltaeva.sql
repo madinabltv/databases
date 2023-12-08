@@ -32,9 +32,9 @@ GO
 
 INSERT INTO Reader ( FirstName, SecondName, Telephone, DateOfBirth, Email) VALUES
 (N'Madina', 'Baltaeva','89253080955', '2003-07-09', 'madina_bltv@vk.com'),
-(N'Valeria','Potrebina','89026730962', '2003-07-24', 'Valery@gmail.com'),
-(N'Arkadiy','Shevyrov','89999258452', '2004-02-17', 'shrv@gmail.com'),
-(N'Egor','Velichko','89999258456', '2002-09-09', 'velichkoegor@icloud.com'),
+(N'Valeria','Potrebina','89026341162', '2003-07-24', 'Valery@gmail.com'),
+(N'Arkadiy','Shevyrov','89789258562', '2004-02-17', 'shrv@gmail.com'),
+(N'Egor','Velichko','89329258496', '2002-09-09', 'velichkoegor@icloud.com'),
 (N'Darya','Vasilovskaya','89212560513', '2001-12-07', 'vslvsky@gmail.com');
 
 SELECT * FROM Reader;
