@@ -34,9 +34,9 @@ GO
 
 INSERT INTO Readers_M ( FirstName, SecondName, Telephone, DateOfBirth, Email) VALUES
 (N'Madina', 'Baltaeva','89253080955', '2003-07-09', 'madina_bltv@vk.com'),
-(N'Valeria','Potrebina','89026730962', '2003-07-24', 'Valery@gmail.com'),
-(N'Shevyrov','Arkadiy','89999258452', '2004-02-17', 'shrv@gmail.com'),
-(N'Velichko',' Egor','89999258456', '2002-09-09', 'velichkoegor@icloud.com');
+(N'Valeria','Potrebina','89025735982', '2003-07-24', 'Valery@gmail.com'),
+(N'Shevyrov','Arkadiy','89076258452', '2004-02-17', 'shrv@gmail.com'),
+(N'Velichko',' Egor','89049258456', '2002-09-09', 'velichkoegor@icloud.com');
 
 SELECT * FROM Readers_M;
 
