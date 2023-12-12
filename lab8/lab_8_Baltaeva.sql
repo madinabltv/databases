@@ -15,9 +15,6 @@ GO
 
 --1. Создать хранимую процедуру, производящую выборку из некоторой 
 --таблицы и возвращающую результат выборки в виде курсора.
-/*
-4. Модифицировать хранимую процедуру п.2. таким образом, чтобы выборка 
-формировалась с помощью табличной функции.*/
 DROP TABLE IF EXISTS Reader
 CREATE TABLE Reader(
     ReaderID INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -32,9 +29,9 @@ GO
 
 INSERT INTO Reader ( FirstName, SecondName, Telephone, DateOfBirth, Email) VALUES
 (N'Madina', 'Baltaeva','89253080955', '2003-07-09', 'madina_bltv@vk.com'),
-(N'Valeria','Potrebina','89026341162', '2003-07-24', 'Valery@gmail.com'),
-(N'Arkadiy','Shevyrov','89789258562', '2004-02-17', 'shrv@gmail.com'),
-(N'Egor','Velichko','89329258496', '2002-09-09', 'velichkoegor@icloud.com'),
+(N'Valeria','Potrebina','89026730962', '2003-07-24', 'Valery@gmail.com'),
+(N'Arkadiy','Shevyrov','89999258452', '2004-02-17', 'shrv@gmail.com'),
+(N'Egor','Velichko','89999258456', '2002-09-09', 'velichkoegor@icloud.com'),
 (N'Darya','Vasilovskaya','89212560513', '2001-12-07', 'vslvsky@gmail.com');
 
 SELECT * FROM Reader;
@@ -51,6 +48,7 @@ AS
     FORWARD_ONLY STATIC FOR 
         SELECT ReaderID, FirstName--, SecondName
         FROM Reader
+    
     OPEN @reader_cursor;
 GO
 
@@ -68,6 +66,7 @@ CLOSE @reader_cursor;
 DEALLOCATE @reader_cursor; 
 GO
 GO
+
 
 --2 Модифицировать хранимую процедуру п.1. таким образом, чтобы выборка 
 -- осуществлялась с формированием столбца, значение которого
@@ -87,7 +86,9 @@ ALTER PROCEDURE reader_proc
     @reader_cursor CURSOR VARYING OUTPUT
 AS 
 BEGIN   
-    SET @reader_cursor = CURSOR FORWARD_ONLY STATIC FOR 
+
+    SET @reader_cursor = CURSOR 
+    FORWARD_ONLY STATIC FOR 
         SELECT ReaderID, dbo.GetReaderNames(FirstName, SecondName) AS FullName
         FROM Reader
     OPEN @reader_cursor
@@ -127,17 +128,119 @@ CREATE FUNCTION dbo.GetAge(@birthdate date)
     END
 GO
 
+IF OBJECT_ID(N'dbo.compare_ages', N'FN') is not null
+	drop function dbo.compare_ages;
+go
+create function dbo.compare_ages(@compare_what int, @compare_to int)
+	returns int
+	with execute as caller
+	as
+	begin
+		declare @retval int;
 
-IF OBJECT_ID(N'dbo.getAdults', N'FN') IS NOT NULL            
-    DROP FUNCTION dbo.getAdults
+		if (@compare_what >= @compare_to)
+			set @retval = 1;
+		else 
+			set @retval = 0;
+
+		return @retval;
+	end
+go
+
+
+IF OBJECT_ID(N'dbo.sub_proc_for_3point', N'P') IS NOT NULL
+	DROP PROCEDURE dbo.sub_proc_for_3point
+GO
+CREATE PROCEDURE dbo.sub_proc_for_3point
+	@curs CURSOR VARYING OUTPUT
+AS
+    SET @curs = CURSOR
+    FORWARD_ONLY STATIC FOR
+		SELECT FirstName, SecondName, dbo.GetAge(DateOfBirth)
+		FROM dbo.Reader
+	OPEN @curs;
 GO
 
-CREATE FUNCTION dbo.getAdults()
+IF OBJECT_ID(N'ext_proc', N'P') IS NOT NULL
+    DROP PROC ext_proc;
+GO
+
+CREATE PROCEDURE ext_proc
+AS 
+BEGIN
+    DECLARE @ext_cursor CURSOR;
+    EXECUTE dbo.sub_proc_for_3point @curs = @ext_cursor OUTPUT;
+    DECLARE @r_fstnm NVARCHAR(255)
+    DECLARE @r_sndnm NVARCHAR(255)
+    DECLARE @r_age INT
+    
+    FETCH NEXT FROM @ext_cursor 
+    INTO @r_fstnm, @r_sndnm, @r_age
+	PRINT 'First Fetch: "' + @r_fstnm + '"'
+
+	WHILE (@@FETCH_STATUS = 0)
+	BEGIN
+	IF (dbo.compare_ages(@r_age, 18) = 1)
+		print @r_fstnm + ' ' + @r_sndnm + ' is ' + CAST(@r_age as varchar) + ' years '
+	FETCH NEXT FROM @ext_cursor
+	INTO @r_fstnm, @r_sndnm, @r_age;
+	END;
+
+
+	CLOSE @ext_cursor
+	DEALLOCATE @ext_cursor
+END
+GO
+
+EXEC ext_proc
+GO
+
+
+/* 4. Модифицировать хранимую процедуру п.2. таким образом, чтобы выборка 
+формировалась с помощью табличной функции. */
+
+IF OBJECT_ID(N'dbo.getAdults_inline', N'FN') IS NOT NULL            
+    DROP FUNCTION dbo.getAdults_inline
+GO
+
+CREATE FUNCTION dbo.getAdults_inline()
 RETURNS TABLE
 AS
 RETURN (
-    SELECT ReaderID, dbo.GetReaderNames(FirstName, SecondName) AS FullName, dbo.GetAge(DateOfBirth) AS Age
+    SELECT dbo.GetReaderNames(FirstName, SecondName) AS FullName, dbo.GetAge(DateOfBirth) AS Age
     FROM Reader
     WHERE dbo.GetAge(DateOfBirth) > 18
 );
+GO 
+
+IF OBJECT_ID(N'dbo.Adults', N'FN') IS NOT NULL            
+    DROP PROCEDURE dbo.Adults
+GO
+
+CREATE PROCEDURE Adults
+    @adults_cur CURSOR VARYING OUTPUT
+AS
+    SET @adults_cur = CURSOR
+        FORWARD_ONLY FOR
+        SELECT FullName, 
+               Age FROM dbo.getAdults_inline();
+        OPEN @adults_cur;
+GO
+
+DECLARE @adults_cur CURSOR;
+EXEC Adults @adults_cur = @adults_cur OUTPUT;
+
+DECLARE 
+    @fullname NVARCHAR(512),
+    @r_age int;
+FETCH NEXT FROM @adults_cur INTO @fullname, @r_age;
+
+WHILE (@@FETCH_STATUS = 0)
+BEGIN
+    PRINT @fullname + ' is up to eighteen, his/her age is ' + CAST(@r_age as varchar);
+    FETCH NEXT FROM @adults_cur INTO @fullname, @r_age;
+END;
+
+CLOSE @adults_cur;
+DEALLOCATE @adults_cur;
 GO
